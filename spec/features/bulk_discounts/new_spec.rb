@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe "New Bulk Discount" do
+RSpec.describe "New Bulk Discount", type: :feature do
   before :each do
     @merchant1 = Merchant.create!(name: "Hair Care")
     
