@@ -1,5 +1,7 @@
 <%= render partial: "shared/nav" %>
 
+<p><%= link_to "#{@merchant.name}'s Bulk Discounts", "/merchants/#{@merchant.id}/bulk_discounts" %></p>
+
 <div class="row">
   <div class="col-sm-6 column-header">
     <p class='mr-auto'>Favorite Customers</p>
