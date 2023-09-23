@@ -4,4 +4,5 @@
 
 <% @bulk_discounts.each do |discount| %>
   <p><%= link_to "#{discount.percentage}% off orders of #{discount.quantity_threshold} or more items", "/merchants/#{@merchant.id}/bulk_discounts/#{discount.id}" %></p>
+  <p><%= button_to "Delete #{discount.percentage}% off discount", "/merchants/#{@merchant.id}/bulk_discounts/#{discount.id}", method: :delete %></p>
 <% end %>
