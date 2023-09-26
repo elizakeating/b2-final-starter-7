@@ -69,4 +69,31 @@ describe "Admin Invoices Index Page" do
       expect(@i1.status).to eq("completed")
     end
   end
+
+  it "I see the total revenue from this invoice (not including discounts) and I see the total discounted revenue from this invoice which includes bulk discounts in the calculation" do
+    merchant_a = Merchant.create(name: "Merchant A")
+      merchant_b = Merchant.create(name: "Merchant B")
+
+      item_a1 = Item.create!(name: "Shampoo", description: "This washes your hair", unit_price: 10, merchant_id: merchant_a.id, status: 1)
+      item_a2 = Item.create!(name: "Conditioner", description: "This makes your hair shiny", unit_price: 8, merchant_id: merchant_a.id, status: 1)
+
+      item_b = Item.create!(name: "Scrunchie", description: "This holds up your hair but is bigger", unit_price: 3, merchant_id: merchant_b.id)
+
+      bulk_discount_1 = merchant_a.bulk_discounts.create(percentage: 20, quantity_threshold: 10)
+      bulk_discount_1 = merchant_a.bulk_discounts.create(percentage: 30, quantity_threshold: 15)
+
+      customer_1 = Customer.create(first_name: "Joey", last_name: "Smith")
+
+      invoice_a = Invoice.create(customer_id: customer_1.id, status: 2)
+
+      invoice_item_1 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_a1.id, quantity: 12, unit_price: 253, status: 2)
+      invoice_item_2 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_a2.id, quantity: 15, unit_price: 747, status: 2)
+
+      invoice_item_3 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_b.id, quantity: 15, unit_price: 125, status: 2)
+
+      visit admin_invoice_path(invoice_a)
+
+      expect(page).to have_content("Total Revenue: $16,116.00")
+      expect(page).to have_content("Total Revenue with Discounts: $12,147.30")
+  end
 end
