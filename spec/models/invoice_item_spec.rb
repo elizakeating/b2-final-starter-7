@@ -39,4 +39,31 @@ RSpec.describe InvoiceItem, type: :model do
       expect(InvoiceItem.incomplete_invoices).to eq([@i1, @i3])
     end
   end
+
+  describe "instance methods" do
+    describe "find_discount" do
+      it "returns the applicable discount for the item" do
+        merchant1 = Merchant.create!(name: "Hair Care")
+
+        bulk_discount_1 = merchant1.bulk_discounts.create(percentage: 5, quantity_threshold: 10)
+        bulk_discount_2 = merchant1.bulk_discounts.create(percentage: 2, quantity_threshold: 8)
+
+        item_1 = Item.create!(name: "Shampoo", description: "This washes your hair", unit_price: 10, merchant_id: merchant1.id, status: 1)
+        item_7 = Item.create!(name: "Scrunchie", description: "This holds up your hair but is bigger", unit_price: 3, merchant_id: merchant1.id)
+        item_8 = Item.create!(name: "Butterfly Clip", description: "This holds up your hair but in a clip", unit_price: 5, merchant_id: merchant1.id)
+
+        customer_1 = Customer.create!(first_name: "Joey", last_name: "Smith")
+
+        invoice_1 = Invoice.create!(customer_id: customer_1.id, status: 2, created_at: "2012-03-27 14:54:09")
+
+        ii_1 = InvoiceItem.create!(invoice_id: invoice_1.id, item_id: item_1.id, quantity: 9, unit_price: 10, status: 2)
+        ii_11 = InvoiceItem.create!(invoice_id: invoice_1.id, item_id: item_8.id, quantity: 12, unit_price: 6, status: 1)
+        ii_12 = InvoiceItem.create!(invoice_id: invoice_1.id, item_id: item_7.id, quantity: 4, unit_price: 8, status: 1)
+
+        expect(ii_1.find_discount).to eq(bulk_discount_2)
+        expect(ii_11.find_discount).to eq(bulk_discount_1)
+        expect(ii_12.find_discount).to eq(nil)
+      end
+    end
+  end
 end
