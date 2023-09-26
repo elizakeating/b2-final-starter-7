@@ -93,8 +93,6 @@ describe "Admin Invoices Index Page" do
 
       visit admin_invoice_path(invoice_a)
 
-      save_and_open_page
-
       expect(page).to have_content("Total Revenue: $16,116.00")
       expect(page).to have_content("Total Revenue with Discounts: $12,147.30")
   end
