@@ -5,6 +5,10 @@ RSpec.describe "invoices show" do
     @merchant1 = Merchant.create!(name: "Hair Care")
     @merchant2 = Merchant.create!(name: "Jewelry")
 
+    @bulk_discount_1 = @merchant1.bulk_discounts.create(percentage: 5, quantity_threshold: 10)
+    @bulk_discount_2 = @merchant1.bulk_discounts.create(percentage: 2, quantity_threshold: 8)
+    @bulk_discount_3 = @merchant2.bulk_discounts.create(percentage: 10, quantity_threshold: 9)
+
     @item_1 = Item.create!(name: "Shampoo", description: "This washes your hair", unit_price: 10, merchant_id: @merchant1.id, status: 1)
     @item_2 = Item.create!(name: "Conditioner", description: "This makes your hair shiny", unit_price: 8, merchant_id: @merchant1.id)
     @item_3 = Item.create!(name: "Brush", description: "This takes out tangles", unit_price: 5, merchant_id: @merchant1.id)
@@ -42,6 +46,7 @@ RSpec.describe "invoices show" do
     @ii_9 = InvoiceItem.create!(invoice_id: @invoice_7.id, item_id: @item_4.id, quantity: 1, unit_price: 1, status: 1)
     @ii_10 = InvoiceItem.create!(invoice_id: @invoice_8.id, item_id: @item_5.id, quantity: 1, unit_price: 1, status: 1)
     @ii_11 = InvoiceItem.create!(invoice_id: @invoice_1.id, item_id: @item_8.id, quantity: 12, unit_price: 6, status: 1)
+    @ii_12 = InvoiceItem.create!(invoice_id: @invoice_1.id, item_id: @item_7.id, quantity: 4, unit_price: 8, status: 1)
 
     @transaction1 = Transaction.create!(credit_card_number: 203942, result: 1, invoice_id: @invoice_1.id)
     @transaction2 = Transaction.create!(credit_card_number: 230948, result: 1, invoice_id: @invoice_2.id)
@@ -100,4 +105,138 @@ RSpec.describe "invoices show" do
     end
   end
 
+   describe "shows the total revenue and discounted revenue" do
+    it "example 1" do
+      merchant_a = Merchant.create(name: "Merchant A")
+
+      item_a = Item.create!(name: "Shampoo", description: "This washes your hair", unit_price: 10, merchant_id: merchant_a.id, status: 1)
+      item_b = Item.create!(name: "Conditioner", description: "This makes your hair shiny", unit_price: 8, merchant_id: merchant_a.id, status: 1)
+
+      bulk_discount_1 = merchant_a.bulk_discounts.create(percentage: 20, quantity_threshold: 10)
+
+      customer_1 = Customer.create(first_name: "Joey", last_name: "Smith")
+
+      invoice_a = Invoice.create(customer_id: customer_1.id, status: 2)
+
+      invoice_item_1 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_a.id, quantity: 5, unit_price: 253, status: 2)
+      invoice_item_2 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_b.id, quantity: 5, unit_price: 747, status: 2)
+
+      visit merchant_invoice_path(merchant_a, invoice_a)
+      
+      expect(page).to have_content("Total Revenue: $5000.0")
+      expect(page).to have_content("Total Revenue with Discounts: $5,000.00")
+    end
+
+    it "example 2" do
+      merchant_a = Merchant.create(name: "Merchant A")
+
+      item_a = Item.create!(name: "Shampoo", description: "This washes your hair", unit_price: 10, merchant_id: merchant_a.id, status: 1)
+      item_b = Item.create!(name: "Conditioner", description: "This makes your hair shiny", unit_price: 8, merchant_id: merchant_a.id, status: 1)
+
+      bulk_discount_1 = merchant_a.bulk_discounts.create(percentage: 20, quantity_threshold: 10)
+
+      customer_1 = Customer.create(first_name: "Joey", last_name: "Smith")
+
+      invoice_a = Invoice.create(customer_id: customer_1.id, status: 2)
+
+      invoice_item_1 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_a.id, quantity: 10, unit_price: 253, status: 2)
+      invoice_item_2 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_b.id, quantity: 5, unit_price: 747, status: 2)
+
+      visit merchant_invoice_path(merchant_a, invoice_a)
+
+      expect(page).to have_content("Total Revenue: $6265.0")
+      expect(page).to have_content("Total Revenue with Discounts: $5,759.00")
+    end
+
+    it "example 3" do
+      merchant_a = Merchant.create(name: "Merchant A")
+
+      item_a = Item.create!(name: "Shampoo", description: "This washes your hair", unit_price: 10, merchant_id: merchant_a.id, status: 1)
+      item_b = Item.create!(name: "Conditioner", description: "This makes your hair shiny", unit_price: 8, merchant_id: merchant_a.id, status: 1)
+
+      bulk_discount_1 = merchant_a.bulk_discounts.create(percentage: 20, quantity_threshold: 10)
+      bulk_discount_1 = merchant_a.bulk_discounts.create(percentage: 30, quantity_threshold: 15)
+
+      customer_1 = Customer.create(first_name: "Joey", last_name: "Smith")
+
+      invoice_a = Invoice.create(customer_id: customer_1.id, status: 2)
+
+      invoice_item_1 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_a.id, quantity: 12, unit_price: 253, status: 2)
+      invoice_item_2 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_b.id, quantity: 15, unit_price: 747, status: 2)
+
+      visit merchant_invoice_path(merchant_a, invoice_a)
+
+      expect(page).to have_content("Total Revenue: $14241.0")
+      expect(page).to have_content("Total Revenue with Discounts: $10,272.30")
+    end
+
+    it "example 4" do
+      merchant_a = Merchant.create(name: "Merchant A")
+
+      item_a = Item.create!(name: "Shampoo", description: "This washes your hair", unit_price: 10, merchant_id: merchant_a.id, status: 1)
+      item_b = Item.create!(name: "Conditioner", description: "This makes your hair shiny", unit_price: 8, merchant_id: merchant_a.id, status: 1)
+
+      bulk_discount_1 = merchant_a.bulk_discounts.create(percentage: 20, quantity_threshold: 10)
+      bulk_discount_1 = merchant_a.bulk_discounts.create(percentage: 15, quantity_threshold: 15)
+
+      customer_1 = Customer.create(first_name: "Joey", last_name: "Smith")
+
+      invoice_a = Invoice.create(customer_id: customer_1.id, status: 2)
+
+      invoice_item_1 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_a.id, quantity: 12, unit_price: 253, status: 2)
+      invoice_item_2 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_b.id, quantity: 15, unit_price: 747, status: 2)
+
+      visit merchant_invoice_path(merchant_a, invoice_a)
+
+      expect(page).to have_content("Total Revenue: $14241.0")
+      expect(page).to have_content("Total Revenue with Discounts: $11,392.80")
+    end
+
+    it "example 5" do
+      merchant_a = Merchant.create(name: "Merchant A")
+      merchant_b = Merchant.create(name: "Merchant B")
+
+      item_a1 = Item.create!(name: "Shampoo", description: "This washes your hair", unit_price: 10, merchant_id: merchant_a.id, status: 1)
+      item_a2 = Item.create!(name: "Conditioner", description: "This makes your hair shiny", unit_price: 8, merchant_id: merchant_a.id, status: 1)
+
+      item_b = Item.create!(name: "Scrunchie", description: "This holds up your hair but is bigger", unit_price: 3, merchant_id: merchant_b.id)
+
+      bulk_discount_1 = merchant_a.bulk_discounts.create(percentage: 20, quantity_threshold: 10)
+      bulk_discount_1 = merchant_a.bulk_discounts.create(percentage: 30, quantity_threshold: 15)
+
+      customer_1 = Customer.create(first_name: "Joey", last_name: "Smith")
+
+      invoice_a = Invoice.create(customer_id: customer_1.id, status: 2)
+
+      invoice_item_1 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_a1.id, quantity: 12, unit_price: 253, status: 2)
+      invoice_item_2 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_a2.id, quantity: 15, unit_price: 747, status: 2)
+
+      invoice_item_3 = InvoiceItem.create!(invoice_id: invoice_a.id, item_id: item_b.id, quantity: 15, unit_price: 125, status: 2)
+      
+
+      visit merchant_invoice_path(merchant_a, invoice_a)
+
+      expect(page).to have_content("Total Revenue: $16116.0")
+      expect(page).to have_content("Total Revenue with Discounts: $12,147.30")
+    end
+  end
+
+  it "next to each invoice item I see a link to show the page for the bulk discount that was applied (if any)" do
+    visit merchant_invoice_path(@merchant1, @invoice_1)
+
+    within("#the-status-#{@ii_1.id}") do
+      expect(page).to have_link("2% off")
+    end
+
+    within("#the-status-#{@ii_12.id}") do
+      expect(page).not_to have_link
+    end
+
+    within("#the-status-#{@ii_11.id}") do
+      expect(page).to have_link("5% off")
+      click_link("5% off")
+    end
+
+    expect(current_path).to eq(merchant_bulk_discount_path(@merchant1, @bulk_discount_1))
+  end
 end
