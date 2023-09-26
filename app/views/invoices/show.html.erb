@@ -27,6 +27,7 @@
         <th class="th1">Quantity</th>
         <th class="th1">Unit Price</th>
         <th class="th1">Status</th>
+        <th class="th1">Bulk Discount</th>
       </tr>
     </thead>
 
@@ -42,6 +43,11 @@
                 <%= f.select :status, Invoice.statuses.keys, selected: "#{@invoice.status}" %>
                 <%= f.submit 'Update Invoice' %>
               <% end %>
+              </td>
+              <td style="text-align:center">
+                <% if !i.find_discount.nil? %>
+                  <%= link_to "#{i.find_discount.percentage}% off", merchant_bulk_discount_path(@merchant, i.find_discount) %>
+                <% end %>
               </td>
           </tr>
         </section>

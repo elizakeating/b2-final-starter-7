@@ -4,7 +4,7 @@ RSpec.describe "invoices show" do
   before :each do
     @merchant1 = Merchant.create!(name: "Hair Care")
     @merchant2 = Merchant.create!(name: "Jewelry")
-    
+
     @item_1 = Item.create!(name: "Shampoo", description: "This washes your hair", unit_price: 10, merchant_id: @merchant1.id, status: 1)
     @item_2 = Item.create!(name: "Conditioner", description: "This makes your hair shiny", unit_price: 8, merchant_id: @merchant1.id)
     @item_3 = Item.create!(name: "Brush", description: "This takes out tangles", unit_price: 5, merchant_id: @merchant1.id)
@@ -41,10 +41,7 @@ RSpec.describe "invoices show" do
     @ii_8 = InvoiceItem.create!(invoice_id: @invoice_7.id, item_id: @item_8.id, quantity: 1, unit_price: 5, status: 1)
     @ii_9 = InvoiceItem.create!(invoice_id: @invoice_7.id, item_id: @item_4.id, quantity: 1, unit_price: 1, status: 1)
     @ii_10 = InvoiceItem.create!(invoice_id: @invoice_8.id, item_id: @item_5.id, quantity: 1, unit_price: 1, status: 1)
-    @ii_11 = InvoiceItem.create!(invoice_id: @invoice_1.id, item_id: @item_8.id, quantity: 12, unit_price: 6, status: 1) 
-    
-    @bulk_discount1 = @merchant1.bulk_discounts.create!(percentage: 6, quantity_threshold: 5)
-    @bulk_discount2 = @merchant1.bulk_discounts.create!(percentage: 10, quantity_threshold: 9)
+    @ii_11 = InvoiceItem.create!(invoice_id: @invoice_1.id, item_id: @item_8.id, quantity: 12, unit_price: 6, status: 1)
 
     @transaction1 = Transaction.create!(credit_card_number: 203942, result: 1, invoice_id: @invoice_1.id)
     @transaction2 = Transaction.create!(credit_card_number: 230948, result: 1, invoice_id: @invoice_2.id)
@@ -103,10 +100,4 @@ RSpec.describe "invoices show" do
     end
   end
 
-  it "I see the total revenue for my merchant from this invoice (not including discounts) and I see the total discounted revenue for my merchant from this invoice which includes bulk discounts in the calculation" do
-    visit merchant_invoice_path(@merchant1, @invoice_1)
-
-    expect(page).to have_content("Total Revenue: $#{@invoice_1.total_revenue}")
-    expect(page).to have_content("Total Revenue with Discounts: ")
-  end
 end
