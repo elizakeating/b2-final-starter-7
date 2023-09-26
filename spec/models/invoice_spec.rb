@@ -23,5 +23,9 @@ RSpec.describe Invoice, type: :model do
 
       expect(@invoice_1.total_revenue).to eq(100)
     end
+
+    it "discounted revenue" do
+      
+    end
   end
 end
